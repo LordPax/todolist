@@ -42,6 +42,10 @@ func TestNewTask(t *testing.T) {
 	utils.SqliteInstance, _ = utils.ConnectDB(true)
 	task := NewTask(TASK_NAME)
 
+	if task.Id != 0 {
+		t.Error("Task id should be 0 but is", task.Id)
+	}
+
 	if task.Name != TASK_NAME {
 		t.Error("Task name should be", TASK_NAME)
 	}
@@ -96,17 +100,17 @@ func TestGetTask(t *testing.T) {
 	utils.SqliteInstance.Close()
 }
 
-func TestGetTasksByListId(t *testing.T) {
+func TestGetTasksByUserId(t *testing.T) {
 	utils.SqliteInstance, _ = utils.ConnectDB(true)
 	var listId int64 = 1
 
 	// insert tasks
 	for _, task := range tasks {
-		task.ListId = listId
+		task.UserId = listId
 		task.Save()
 	}
 
-	tasksDB, _ := GetTasksByListId(listId)
+	tasksDB, _ := GetTasksByUserId(listId)
 
 	if len(tasksDB) != len(tasks) {
 		t.Error("Tasks should have", len(tasks), "tasks but has", len(tasksDB))
