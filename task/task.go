@@ -17,11 +17,8 @@ type Task struct {
 	BeginDate   time.Time `json:"begin_date"`
 	Priority    int       `json:"priority"`
 	Location    string    `json:"location"`
-	Repeat      string    `json:"repeat"`
 	Label       string    `json:"label"`
-	ListId      int64     `json:"list_id"`
-	Subtasks    []Task    `json:"subtasks"`
-	Reminders   time.Time `json:"reminders"`
+	UserId      int64     `json:"user_id"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
@@ -67,10 +64,8 @@ func GetTask(id int64) Task {
 		&task.BeginDate,
 		&task.Priority,
 		&task.Location,
-		&task.Repeat,
 		&task.Label,
-		&task.ListId,
-		&task.Reminders,
+		&task.UserId,
 		&task.CreatedAt,
 		&task.UpdatedAt,
 	)
@@ -78,10 +73,10 @@ func GetTask(id int64) Task {
 	return task
 }
 
-func GetTasksByListId(id int64) ([]Task, error) {
+func GetTasksByUserId(id int64) ([]Task, error) {
 	var tasks []Task
 
-	row, err := utils.SqliteInstance.DB.Query("SELECT * FROM tasks WHERE list_id = ?", id)
+	row, err := utils.SqliteInstance.DB.Query("SELECT * FROM tasks WHERE user_id = ?", id)
 
 	if err != nil {
 		return tasks, err
@@ -99,10 +94,8 @@ func GetTasksByListId(id int64) ([]Task, error) {
 			&task.BeginDate,
 			&task.Priority,
 			&task.Location,
-			&task.Repeat,
 			&task.Label,
-			&task.ListId,
-			&task.Reminders,
+			&task.UserId,
 			&task.CreatedAt,
 			&task.UpdatedAt,
 		)
@@ -113,43 +106,6 @@ func GetTasksByListId(id int64) ([]Task, error) {
 	return tasks, nil
 }
 
-func GetTasksByListIdAddr(id int64, r_tasks *[]Task) error {
-	var tasks []Task
-
-	row, err := utils.SqliteInstance.DB.Query("SELECT * FROM tasks WHERE list_id = ?", id)
-
-	if err != nil {
-		r_tasks = nil
-		return err
-	}
-
-	for row.Next() {
-		var task Task
-
-		row.Scan(
-			&task.Id,
-			&task.Name,
-			&task.Description,
-			&task.Completed,
-			&task.EndDate,
-			&task.BeginDate,
-			&task.Priority,
-			&task.Location,
-			&task.Repeat,
-			&task.Label,
-			&task.ListId,
-			&task.Reminders,
-			&task.CreatedAt,
-			&task.UpdatedAt,
-		)
-
-		tasks = append(tasks, task)
-	}
-
-	r_tasks = &tasks
-	return nil
-}
-
 func (t *Task) Complete() {
 	t.Completed = !t.Completed
 }
@@ -158,9 +114,9 @@ func (t *Task) Save() error {
 	var query string
 
 	if t.Id == 0 {
-		query = "INSERT INTO tasks (name, description, completed, end_date, begin_date, priority, location, repeat, label, list_id, reminders, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+		query = "INSERT INTO tasks (name, description, completed, end_date, begin_date, priority, location, label, user_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 	} else {
-		query = "UPDATE tasks SET name = ?, description = ?, completed = ?, end_date = ?, begin_date = ?, priority = ?, location = ?, repeat = ?, label = ?, list_id = ?, reminders = ?, created_at = ?, updated_at = ? WHERE id = ?"
+		query = "UPDATE tasks SET name = ?, description = ?, completed = ?, end_date = ?, begin_date = ?, priority = ?, location = ?, label = ?, user_id = ?, created_at = ?, updated_at = ? WHERE id = ?"
 	}
 
 	stmt, err := utils.SqliteInstance.DB.Prepare(query)
@@ -178,10 +134,8 @@ func (t *Task) Save() error {
 			t.BeginDate,
 			t.Priority,
 			t.Location,
-			t.Repeat,
 			t.Label,
-			t.ListId,
-			t.Reminders,
+			t.UserId,
 			t.CreatedAt,
 			t.UpdatedAt,
 		)
@@ -201,10 +155,8 @@ func (t *Task) Save() error {
 			t.BeginDate,
 			t.Priority,
 			t.Location,
-			t.Repeat,
 			t.Label,
-			t.ListId,
-			t.Reminders,
+			t.UserId,
 			t.CreatedAt,
 			t.UpdatedAt,
 			t.Id,
