@@ -48,7 +48,7 @@ var (
 	}
 )
 
-func TestNewList(t *testing.T) {
+func TestNewUser(t *testing.T) {
 	user := NewUser(users[0].Firstname, users[0].Lastname, users[0].Email, users[0].Tasks)
 
 	if user.Firstname != users[0].Firstname {
