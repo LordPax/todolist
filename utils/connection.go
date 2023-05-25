@@ -27,6 +27,8 @@ func ConnectDB(memory bool) (Connection, error) {
 
 	db.Exec("CREATE TABLE IF NOT EXISTS tasks (id INTEGER PRIMARY KEY, name TEXT, description TEXT, completed BOOLEAN, end_date DATETIME, begin_date DATETIME, priority INTEGER, location TEXT, label TEXT, user_id INTEGER, created_at DATETIME, updated_at DATETIME)")
 
+	db.Exec("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, firstname TEXT, lastname TEXT, email TEXT, birthdate DATETIME, password TEXT, created_at DATETIME, updated_at DATETIME)")
+
 	return Connection{db}, nil
 }
 
