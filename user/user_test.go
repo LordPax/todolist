@@ -89,19 +89,9 @@ func TestSaveUser(t *testing.T) {
 		user.Save()
 
 		if user.Id != int64(i+1) {
-			t.Error("User id should be", i+1)
+			t.Error("User id should be", i+1, "but is", user.Id)
 		}
 	}
-
-	// rows, _ := utils.SqliteInstance.DB.Query("SELECT id, name, color FROM lists")
-
-	// var listsDB []List
-	// for rows.Next() {
-	// 	var listDB List
-	// 	rows.Scan(&listDB.Id, &listDB.Name, &listDB.Color)
-	// 	listDB.Tasks, _ = GetTasksByListId(listDB.Id)
-	// 	listsDB = append(listsDB, listDB)
-	// }
 
 	usersDB, _ := GetUsers()
 
@@ -140,14 +130,6 @@ func TestSaveUser(t *testing.T) {
 		userDB.Save()
 	}
 
-	// rows, _ := utils.SqliteInstance.DB.Query("SELECT id, name, color FROM lists")
-
-	// var listsDBUpdate []List
-	// for rows.Next() {
-	// 	var listDB List
-	// 	rows.Scan(&listDB.Id, &listDB.Name, &listDB.Color)
-	// 	listsDBUpdate = append(listsDBUpdate, listDB)
-	// }
 	usersDBUpdate, _ := GetUsers()
 
 	for i, userDBUpdate := range usersDBUpdate {
@@ -167,15 +149,14 @@ func TestSaveUser(t *testing.T) {
 			t.Error("Password should be", users[i].Password, "but got", userDBUpdate.Password)
 		}
 		if len(userDBUpdate.Tasks) != len(tasks) {
-			t.Error("List tasks length is not correct")
+			t.Error("Tasks length should be", len(tasks), "but got", len(userDBUpdate.Tasks))
 		}
 		for i, task := range userDBUpdate.Tasks {
 			if task.Name != tasks[i].Name {
-				t.Error("List tasks name is not correct")
+				t.Error("Task name should be", tasks[i].Name, "but got", task.Name)
 			}
 		}
 	}
 
 	utils.SqliteInstance.Close()
-
 }

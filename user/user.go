@@ -165,7 +165,7 @@ func (u *User) Save() error {
 	var query string
 
 	if u.Id == 0 {
-		query = "INSERT INTO users (firstname, lastname, email, birthdate, password, created_at, updated_at) VALUES (?, ?, ?, ?)"
+		query = "INSERT INTO users (firstname, lastname, email, birthdate, password, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
 	} else {
 		query = "UPDATE users SET firstname = ?, lastname = ?, email = ?, birthdate = ?, password = ?, created_at = ?, updated_at = ? WHERE id = ?"
 	}
