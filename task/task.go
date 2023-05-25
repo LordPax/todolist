@@ -114,7 +114,7 @@ func (t *Task) Save() error {
 	var query string
 
 	if t.Id == 0 {
-		query = "INSERT INTO tasks (name, description, completed, end_date, begin_date, priority, location, label, user_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+		query = "INSERT INTO tasks (name, description, completed, end_date, begin_date, priority, location, label, user_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 	} else {
 		query = "UPDATE tasks SET name = ?, description = ?, completed = ?, end_date = ?, begin_date = ?, priority = ?, location = ?, label = ?, user_id = ?, created_at = ?, updated_at = ? WHERE id = ?"
 	}
