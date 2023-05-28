@@ -3,6 +3,7 @@ package user
 import (
 	"net/mail"
 	"time"
+	"todolist/services"
 	taskLib "todolist/task"
 	"todolist/utils"
 )
@@ -135,6 +136,12 @@ func (u *User) GetAge() int {
 
 func (u *User) AddTask(task taskLib.Task) {
 	u.Tasks = append(u.Tasks, task)
+	if len(u.Tasks) == 8 {
+		err := services.SendEmail(u.Email, "You have too many tasks", "You have too many tasks")
+		if err != nil {
+			return
+		}
+	}
 }
 
 func (u *User) GetTask(index int64) taskLib.Task {
