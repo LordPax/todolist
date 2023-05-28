@@ -40,6 +40,7 @@ var (
 
 func TestNewTask(t *testing.T) {
 	utils.SqliteInstance, _ = utils.ConnectDB(true)
+	defer utils.SqliteInstance.Close()
 	task := NewTask(TASK_NAME)
 
 	if task.Id != 0 {
@@ -64,12 +65,11 @@ func TestNewTask(t *testing.T) {
 	if taskDB.Name != TASK_NAME {
 		t.Error("Task name should be", TASK_NAME, "but is", taskDB.Name)
 	}
-
-	utils.SqliteInstance.Close()
 }
 
 func TestGetTask(t *testing.T) {
 	utils.SqliteInstance, _ = utils.ConnectDB(true)
+	defer utils.SqliteInstance.Close()
 
 	// insert tasks
 	for _, task := range tasks {
@@ -96,12 +96,11 @@ func TestGetTask(t *testing.T) {
 			t.Error("Task end date should be", task.EndDate, "but is", taskDB.EndDate)
 		}
 	}
-
-	utils.SqliteInstance.Close()
 }
 
 func TestGetTasksByUserId(t *testing.T) {
 	utils.SqliteInstance, _ = utils.ConnectDB(true)
+	defer utils.SqliteInstance.Close()
 	var userId int64 = 1
 
 	// insert tasks
@@ -137,6 +136,7 @@ func TestGetTasksByUserId(t *testing.T) {
 
 func TestSave(t *testing.T) {
 	utils.SqliteInstance, _ = utils.ConnectDB(true)
+	defer utils.SqliteInstance.Close()
 
 	// insert tasks
 	for i, task := range tasks {
@@ -223,12 +223,11 @@ func TestSave(t *testing.T) {
 			t.Error("Task end date should be", tasksDB[i].EndDate)
 		}
 	}
-
-	utils.SqliteInstance.Close()
 }
 
 func TestDelete(t *testing.T) {
 	utils.SqliteInstance, _ = utils.ConnectDB(true)
+	defer utils.SqliteInstance.Close()
 
 	for _, task := range tasks {
 		stmt, _ := utils.SqliteInstance.DB.Prepare("INSERT INTO tasks (name, completed, description, end_date) VALUES (?, ?, ?, ?)")
@@ -265,8 +264,6 @@ func TestDelete(t *testing.T) {
 	if count != 0 {
 		t.Error("Tasks should have 0 tasks but has", count)
 	}
-
-	utils.SqliteInstance.Close()
 }
 
 func TestComplete(t *testing.T) {
@@ -281,6 +278,7 @@ func TestComplete(t *testing.T) {
 
 func TestIsTaskExist(t *testing.T) {
 	utils.SqliteInstance, _ = utils.ConnectDB(true)
+	defer utils.SqliteInstance.Close()
 
 	for _, task := range tasks {
 		stmt, _ := utils.SqliteInstance.DB.Prepare("INSERT INTO tasks (name, completed, description, end_date) VALUES (?, ?, ?, ?)")
@@ -300,6 +298,4 @@ func TestIsTaskExist(t *testing.T) {
 			t.Error("Task should exist")
 		}
 	}
-
-	utils.SqliteInstance.Close()
 }

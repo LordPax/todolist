@@ -1,8 +1,10 @@
 package user
 
 import (
+	"fmt"
 	"net/mail"
 	"time"
+	"todolist/services"
 	taskLib "todolist/task"
 	"todolist/utils"
 )
@@ -22,7 +24,7 @@ type User struct {
 type UserInterface interface {
 	IsValid() bool
 	GetAge() int
-	AddTask(task taskLib.Task)
+	AddTask(task taskLib.Task) error
 	GetTask(index int64) taskLib.Task
 	GetTasks() []taskLib.Task
 	DeleteTask(index int64) error
@@ -80,13 +82,7 @@ func GetUser(id int64) (User, error) {
 		&user.UpdatedAt,
 	)
 
-	tasks, err := taskLib.GetTasksByUserId(id)
-
-	if err != nil {
-		return user, err
-	}
-
-	user.Tasks = tasks
+	user.Tasks, _ = taskLib.GetTasksByUserId(id)
 
 	return user, nil
 
@@ -95,20 +91,27 @@ func GetUser(id int64) (User, error) {
 func GetUsers() ([]User, error) {
 	var users []User
 
-	rows, err := utils.SqliteInstance.DB.Query("SELECT id FROM users")
+	rows, err := utils.SqliteInstance.DB.Query("SELECT * FROM users")
 
 	if err != nil {
-		return users, err
+		return nil, err
 	}
 
 	for rows.Next() {
-		var id int64
-		rows.Scan(&id)
-		user, err := GetUser(id)
+		var user User
 
-		if err != nil {
-			return users, err
-		}
+		rows.Scan(
+			&user.Id,
+			&user.Firstname,
+			&user.Lastname,
+			&user.Email,
+			&user.Birthdate,
+			&user.Password,
+			&user.CreatedAt,
+			&user.UpdatedAt,
+		)
+
+		user.Tasks, _ = taskLib.GetTasksByUserId(user.Id)
 
 		users = append(users, user)
 	}
@@ -133,8 +136,21 @@ func (u *User) GetAge() int {
 	return time.Now().Year() - u.Birthdate.Year()
 }
 
-func (u *User) AddTask(task taskLib.Task) {
+func (u *User) AddTask(task taskLib.Task) error {
+	if len(u.Tasks) >= 8 {
+		err := services.SendEmail(u.Email, "wake up", "You have 2 tasks left")
+		if err != nil {
+			return err
+		}
+	}
+
+	if len(u.Tasks) >= 10 {
+		return fmt.Errorf("You have too many tasks")
+	}
+
 	u.Tasks = append(u.Tasks, task)
+
+	return nil
 }
 
 func (u *User) GetTask(index int64) taskLib.Task {
