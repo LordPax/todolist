@@ -40,7 +40,12 @@ var (
 
 func TestNewTask(t *testing.T) {
 	utils.SqliteInstance, _ = utils.ConnectDB(true)
+	defer utils.SqliteInstance.Close()
 	task := NewTask(TASK_NAME)
+
+	if task.Id != 0 {
+		t.Error("Task id should be 0 but is", task.Id)
+	}
 
 	if task.Name != TASK_NAME {
 		t.Error("Task name should be", TASK_NAME)
@@ -60,12 +65,11 @@ func TestNewTask(t *testing.T) {
 	if taskDB.Name != TASK_NAME {
 		t.Error("Task name should be", TASK_NAME, "but is", taskDB.Name)
 	}
-
-	utils.SqliteInstance.Close()
 }
 
 func TestGetTask(t *testing.T) {
 	utils.SqliteInstance, _ = utils.ConnectDB(true)
+	defer utils.SqliteInstance.Close()
 
 	// insert tasks
 	for _, task := range tasks {
@@ -92,21 +96,20 @@ func TestGetTask(t *testing.T) {
 			t.Error("Task end date should be", task.EndDate, "but is", taskDB.EndDate)
 		}
 	}
-
-	utils.SqliteInstance.Close()
 }
 
-func TestGetTasksByListId(t *testing.T) {
+func TestGetTasksByUserId(t *testing.T) {
 	utils.SqliteInstance, _ = utils.ConnectDB(true)
-	var listId int64 = 1
+	defer utils.SqliteInstance.Close()
+	var userId int64 = 1
 
 	// insert tasks
 	for _, task := range tasks {
-		task.ListId = listId
+		task.UserId = userId
 		task.Save()
 	}
 
-	tasksDB, _ := GetTasksByListId(listId)
+	tasksDB, _ := GetTasksByUserId(userId)
 
 	if len(tasksDB) != len(tasks) {
 		t.Error("Tasks should have", len(tasks), "tasks but has", len(tasksDB))
@@ -133,6 +136,7 @@ func TestGetTasksByListId(t *testing.T) {
 
 func TestSave(t *testing.T) {
 	utils.SqliteInstance, _ = utils.ConnectDB(true)
+	defer utils.SqliteInstance.Close()
 
 	// insert tasks
 	for i, task := range tasks {
@@ -219,12 +223,11 @@ func TestSave(t *testing.T) {
 			t.Error("Task end date should be", tasksDB[i].EndDate)
 		}
 	}
-
-	utils.SqliteInstance.Close()
 }
 
 func TestDelete(t *testing.T) {
 	utils.SqliteInstance, _ = utils.ConnectDB(true)
+	defer utils.SqliteInstance.Close()
 
 	for _, task := range tasks {
 		stmt, _ := utils.SqliteInstance.DB.Prepare("INSERT INTO tasks (name, completed, description, end_date) VALUES (?, ?, ?, ?)")
@@ -253,16 +256,14 @@ func TestDelete(t *testing.T) {
 		taskDB.Delete()
 	}
 
-	rows, _ = utils.SqliteInstance.DB.Query("SELECT Count(*) FROM tasks")
+	row := utils.SqliteInstance.DB.QueryRow("SELECT COUNT(*) FROM tasks")
 
 	var count int
-	rows.Scan(&count)
+	row.Scan(&count)
 
 	if count != 0 {
 		t.Error("Tasks should have 0 tasks but has", count)
 	}
-
-	utils.SqliteInstance.Close()
 }
 
 func TestComplete(t *testing.T) {
@@ -272,5 +273,29 @@ func TestComplete(t *testing.T) {
 
 	if !task.Completed {
 		t.Error("Task should not be complete")
+	}
+}
+
+func TestIsTaskExist(t *testing.T) {
+	utils.SqliteInstance, _ = utils.ConnectDB(true)
+	defer utils.SqliteInstance.Close()
+
+	for _, task := range tasks {
+		stmt, _ := utils.SqliteInstance.DB.Prepare("INSERT INTO tasks (name, completed, description, end_date) VALUES (?, ?, ?, ?)")
+		stmt.Exec(task.Name, task.Completed, task.Description, task.EndDate)
+	}
+
+	var count int
+	row := utils.SqliteInstance.DB.QueryRow("SELECT COUNT(*) FROM tasks")
+	row.Scan(&count)
+
+	if count != len(tasks) {
+		t.Error("It should have", len(tasks), "tasks but has", count)
+	}
+
+	for i := 0; i < len(tasks); i++ {
+		if !IsTaskExist(int64(i + 1)) {
+			t.Error("Task should exist")
+		}
 	}
 }
