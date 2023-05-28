@@ -10,7 +10,7 @@ type EmailSenderServiceInterface interface {
 }
 
 func SendEmail(email string, subject string, body string) error {
-	fmt.Println("Mocked email sent:")
+	fmt.Println("Email sent:")
 	fmt.Println("To:", email)
 	fmt.Println("Subject:", subject)
 	fmt.Println("Body:", body)

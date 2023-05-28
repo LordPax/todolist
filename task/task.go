@@ -79,7 +79,7 @@ func GetTasksByUserId(id int64) ([]Task, error) {
 	row, err := utils.SqliteInstance.DB.Query("SELECT * FROM tasks WHERE user_id = ?", id)
 
 	if err != nil {
-		return tasks, err
+		return nil, err
 	}
 
 	for row.Next() {

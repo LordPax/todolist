@@ -35,3 +35,14 @@ func ConnectDB(memory bool) (Connection, error) {
 func (c *Connection) Close() error {
 	return c.DB.Close()
 }
+
+func (c *Connection) ClearDB() error {
+	_, err := c.DB.Exec("DELETE FROM tasks")
+	_, err = c.DB.Exec("DELETE FROM users")
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

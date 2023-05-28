@@ -79,6 +79,7 @@ func TestNewUser(t *testing.T) {
 
 func TestSaveUser(t *testing.T) {
 	utils.SqliteInstance, _ = utils.ConnectDB(true)
+	defer utils.SqliteInstance.Close()
 
 	// insert lists
 	for i, user := range users {
@@ -97,7 +98,7 @@ func TestSaveUser(t *testing.T) {
 
 	for i, userDB := range usersDB {
 		if userDB.Id != int64(i+1) {
-			t.Error("First id should be", i+1)
+			t.Error("First id should be", i+1, "but got", userDB.Id)
 		}
 		if userDB.Firstname != users[i].Firstname {
 			t.Error("Firstname should be", users[i].Firstname, "but got", userDB.Firstname)
@@ -108,18 +109,18 @@ func TestSaveUser(t *testing.T) {
 		if userDB.Email != users[i].Email {
 			t.Error("Email should be", users[i].Email, "but got", userDB.Email)
 		}
-		if userDB.Birthdate != users[i].Birthdate {
+		if !userDB.Birthdate.Equal(users[i].Birthdate) {
 			t.Error("Birthdate should be", users[i].Birthdate, "but got", userDB.Birthdate)
 		}
 		if userDB.Password != users[i].Password {
 			t.Error("Password should be", users[i].Password, "but got", userDB.Password)
 		}
 		if len(userDB.Tasks) != len(tasks) {
-			t.Error("List tasks length is not correct")
+			t.Error("Tasks lenght should be", len(tasks), "but got", len(userDB.Tasks))
 		}
 		for i, task := range userDB.Tasks {
 			if task.Name != tasks[i].Name {
-				t.Error("List tasks name is not correct")
+				t.Error("Task name should be", tasks[i].Name, "but got", task.Name)
 			}
 		}
 	}
@@ -142,7 +143,7 @@ func TestSaveUser(t *testing.T) {
 		if userDBUpdate.Email != users[i].Email {
 			t.Error("Email should be", users[i].Email, "but got", userDBUpdate.Email)
 		}
-		if userDBUpdate.Birthdate != users[i].Birthdate {
+		if !userDBUpdate.Birthdate.Equal(users[i].Birthdate) {
 			t.Error("Birthdate should be", users[i].Birthdate, "but got", userDBUpdate.Birthdate)
 		}
 		if userDBUpdate.Password != users[i].Password {
@@ -157,6 +158,47 @@ func TestSaveUser(t *testing.T) {
 			}
 		}
 	}
+}
 
-	utils.SqliteInstance.Close()
+// func mockSendEmail(email string, subject string, body string) error {
+// 	return nil
+// }
+
+func TestAddTask(t *testing.T) {
+	// origSendEmail := services.SendEmail
+	// defer func() { services.SendEmail = origSendEmail }()
+	// services.SendEmail = mockSendEmail
+
+	user := NewUser(faker.Person().Name(), faker.Person().Name(), faker.Internet().Email(), nil)
+
+	for i := 0; i < 5; i++ {
+		err := user.AddTask(tasks[0])
+		if err != nil {
+			t.Error("Should not return an error")
+		}
+		if len(user.Tasks) != i+1 {
+			t.Error("Tasks length should be", i+1, "but got", len(user.Tasks))
+		}
+		if user.Tasks[i].Name != tasks[0].Name {
+			t.Error("Task name should be", tasks[0].Name, "but got", user.Tasks[i].Name)
+		}
+		if user.Tasks[i].Description != tasks[0].Description {
+			t.Error("Task description should be", tasks[0].Description, "but got", user.Tasks[i].Description)
+		}
+	}
+
+	user = NewUser(faker.Person().Name(), faker.Person().Name(), faker.Internet().Email(), nil)
+
+	for i := 0; i < 10; i++ {
+		user.Tasks = append(user.Tasks, tasks[0])
+	}
+
+	err := user.AddTask(tasks[0])
+
+	if err == nil {
+		t.Error("Should return an error")
+	}
+	if len(user.Tasks) > 10 {
+		t.Error("Tasks length should be lower than 10 but got", len(user.Tasks))
+	}
 }
